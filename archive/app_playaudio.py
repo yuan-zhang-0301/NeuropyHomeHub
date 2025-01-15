@@ -1,11 +1,15 @@
 import os
+from playsound import playsound
 import sounddevice as sd
 import queue
 import json
 import streamlit as st
 from vosk import Model, KaldiRecognizer
 import openai
-import simpleaudio as sa
+
+# API Key
+# from config import OPENAI_API_KEY
+# openai.api_key = OPENAI_API_KEY
 
 from dotenv import load_dotenv
 
@@ -23,14 +27,7 @@ q = queue.Queue()
 def play_audio(file_path):
     """Play a pre-recorded .wav audio file."""
     if os.path.exists(file_path):
-        try:
-            # Load the .wav file
-            wave_obj = sa.WaveObject.from_wave_file(file_path)
-            # Play the audio
-            play_obj = wave_obj.play()
-            play_obj.wait_done()  # Wait for playback to finish
-        except Exception as e:
-            st.error(f"Error playing audio: {e}")
+        playsound(file_path)
     else:
         st.error(f"Audio file not found: {file_path}")
 
@@ -38,7 +35,6 @@ def audio_callback(indata, frames, time, status):
     """Callback to receive audio data."""
     if status:
         st.error(f"Stream Error: {status}")
-    # Add the audio data to the queue
     q.put(bytes(indata))
 
 def analyze_sentiment_with_chatgpt(text):

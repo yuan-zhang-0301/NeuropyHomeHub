@@ -1,3 +1,4 @@
 echo ".env" >> .gitignore
 .env
 venv/
+vosk-model-small-en-us-0.15

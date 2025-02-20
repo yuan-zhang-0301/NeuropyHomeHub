@@ -295,3 +295,40 @@ async def main():
 if __name__ == "__main__":
     print("Waiting for button press to start...")
     asyncio.run(main())  # ✅ Script starts when button is pressed
+
+
+
+def save_chat_to_firestore(chat_id, emotion_analysis, empathetic_feedback, associations):
+    """Save structured chat data to Firestore."""
+    if not chat_id:
+        raise ValueError("chat_id is required")
+
+    # Extract top-level emotion categories
+    emotion_data = list(associations.keys())[:3]  # Ensure only top 3 emotions
+
+    # Initialize Firebase data structure
+    firebase_data = {
+        "emotion_data": emotion_data,
+        "people": {},
+        "locations": {},
+        "events": {},
+        "environment": {},
+        "health": {},
+        "empathetic_feedback": empathetic_feedback,
+        "emotional_analysis": emotion_analysis,
+        "timestamp": firestore.SERVER_TIMESTAMP
+    }
+
+    # Organize associations by category, limiting to 3 per emotion
+    for emotion, details in associations.items():
+        firebase_data["people"][emotion] = details.get("associated_people", [])[:3]
+        firebase_data["locations"][emotion] = details.get("associated_locations", [])[:3]
+        firebase_data["events"][emotion] = details.get("associated_events", [])[:3]
+        firebase_data["environment"][emotion] = details.get("associated_environment", [])[:3]
+        firebase_data["health"][emotion] = details.get("associated_health", [])[:3]
+
+    # ✅ Save structured data to Firebase
+    db.collection("Hume").document(chat_id).set(firebase_data)
+
+    print(f"Chat {chat_id} saved successfully!")
+
